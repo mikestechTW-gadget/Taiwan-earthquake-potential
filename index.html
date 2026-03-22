@@ -65,10 +65,17 @@ body{background:#0a0a0f;touch-action:none;-webkit-touch-callout:none;-webkit-use
 .panel-title{pointer-events:none;}
 .panel.collapsible::after{content:'▾';position:absolute;top:8px;right:12px;color:#555;font-size:12px;}
 .panel.collapsed::after{content:'▸';}
+
+#modeBtn{display:none;position:absolute;top:10px;right:10px;z-index:20;width:44px;height:44px;border-radius:50%;background:rgba(10,10,20,0.88);backdrop-filter:blur(16px);border:1px solid rgba(255,80,60,0.15);color:#ccc;font-size:20px;cursor:pointer;transition:all 0.3s;line-height:44px;text-align:center;padding:0;}
+#modeBtn:hover,#modeBtn.active{border-color:rgba(255,80,60,0.6);color:#ff6b4a;}
+@media(max-width:768px){
+  #modeBtn{display:block;top:auto;bottom:55px;right:60px;}
+}
 </style>
 </head>
 <body>
 <div id="cv"></div>
+<button id="modeBtn" onclick="toggleTouchMode()" title="切換旋轉/平移">🔄</button>
 <button id="langBtn" onclick="toggleLang()">EN / 中</button>
 <div id="credit">by Michael Liao</div>
 <div id="info" class="panel collapsible" onclick="this.classList.toggle('collapsed')">
@@ -78,7 +85,7 @@ body{background:#0a0a0f;touch-action:none;-webkit-touch-callout:none;-webkit-use
 <div class="st"><span class="l" data-zh="時間範圍" data-en="Time Range">時間範圍</span><span class="v">1973 — 2026</span></div>
 <div class="st"><span class="l" data-zh="最大深度" data-en="Max Depth">最大深度</span><span class="v">312 km</span></div>
 
-<div style="font-size:11px;color:#666;padding-top:10px;line-height:1.6;"><span id="controls" data-zh="🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放&lt;br&gt;⌨ WASD 水平移動" data-en="🖱 Left-drag Rotate · Right-drag Pan · Scroll Zoom&lt;br&gt;⌨ WASD Move">🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放<br>⌨ WASD 水平移動</span></div>
+<div style="font-size:11px;color:#666;padding-top:10px;line-height:1.6;"><span id="controls" data-zh="🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放&lt;br&gt;⌨ WASD 水平移動 · 📱 🔄切換旋轉/平移" data-en="🖱 Left-drag Rotate · Right-drag Pan · Scroll Zoom&lt;br&gt;⌨ WASD Move · 📱 🔄 Toggle Rotate/Pan">🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放<br>⌨ WASD 水平移動 · 📱 🔄切換旋轉/平移</span></div>
 </div></div>
 <div id="leg" class="panel collapsible" onclick="this.classList.toggle('collapsed')">
 <h3 id="depthTitle" data-zh="深度 (km)" data-en="Depth (km)" class="panel-title">深度 (km)</h3>
@@ -139,7 +146,7 @@ rd.domElement.addEventListener('wheel',function(v){v.preventDefault();oc.s.radiu
 rd.domElement.addEventListener('contextmenu',function(v){v.preventDefault();});
 var tch=[],tld=0;
 rd.domElement.addEventListener('touchstart',function(v){tch=[].slice.call(v.touches);if(v.touches.length===2)tld=Math.hypot(v.touches[0].clientX-v.touches[1].clientX,v.touches[0].clientY-v.touches[1].clientY);});
-rd.domElement.addEventListener('touchmove',function(v){v.preventDefault();if(v.touches.length===1&&tch.length>=1){var dx=v.touches[0].clientX-tch[0].clientX,dy=v.touches[0].clientY-tch[0].clientY;tch=[].slice.call(v.touches);oc.s.theta-=dx*0.008;oc.s.phi-=dy*0.008;oc.s.phi=Math.max(0.1,Math.min(Math.PI-0.1,oc.s.phi));ocU();}if(v.touches.length===2){var dd=Math.hypot(v.touches[0].clientX-v.touches[1].clientX,v.touches[0].clientY-v.touches[1].clientY);oc.s.radius*=tld/dd;oc.s.radius=Math.max(8,Math.min(300,oc.s.radius));tld=dd;ocU();}},{passive:false});
+rd.domElement.addEventListener('touchmove',function(v){v.preventDefault();if(v.touches.length===1&&tch.length>=1){var dx=v.touches[0].clientX-tch[0].clientX,dy=v.touches[0].clientY-tch[0].clientY;tch=[].slice.call(v.touches);if(touchMode==='rotate'){oc.s.theta-=dx*0.008;oc.s.phi-=dy*0.008;oc.s.phi=Math.max(0.1,Math.min(Math.PI-0.1,oc.s.phi));ocU();}else{var r2=new THREE.Vector3(),u=new THREE.Vector3();r2.setFromMatrixColumn(cam.matrix,0);u.setFromMatrixColumn(cam.matrix,1);oc.t.addScaledVector(r2,-dx*0.06);oc.t.addScaledVector(u,dy*0.06);ocU();}}if(v.touches.length===2){var dd=Math.hypot(v.touches[0].clientX-v.touches[1].clientX,v.touches[0].clientY-v.touches[1].clientY);oc.s.radius*=tld/dd;oc.s.radius=Math.max(8,Math.min(300,oc.s.radius));tld=dd;ocU();}},{passive:false});
 sc.add(new THREE.AmbientLight(0xffffff,0.6));
 var dlt=new THREE.DirectionalLight(0xffffff,0.4);dlt.position.set(10,20,10);sc.add(dlt);
 var gM=new THREE.LineBasicMaterial({color:0x2a3a50,transparent:true,opacity:0.7});
@@ -247,6 +254,15 @@ function wasdMove(){
   if(keys['w']||keys['s']||keys['a']||keys['d'])ocU();
 }
 
+
+var touchMode='rotate';
+function toggleTouchMode(){
+  touchMode=touchMode==='rotate'?'pan':'rotate';
+  var btn=document.getElementById('modeBtn');
+  btn.textContent=touchMode==='rotate'?'🔄':'✋';
+  btn.classList.toggle('active',touchMode==='pan');
+  btn.title=touchMode==='rotate'?'目前：旋轉 (點擊切換平移)':'目前：平移 (點擊切換旋轉)';
+}
 var currentLang='zh';
 function toggleLang(){
   currentLang=currentLang==='zh'?'en':'zh';

@@ -24,21 +24,27 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Noto Sans TC',sans-serif;over
 #leg h3{font-size:13px;font-weight:600;color:#aaa;margin-bottom:10px}
 #dbar{width:20px;height:160px;border-radius:4px;background:linear-gradient(180deg,#ff4444,#ff8844,#ffcc44,#44aaff,#2244cc);margin:0 auto}
 .dl{font-size:11px;font-family:'JetBrains Mono',monospace;color:#888;margin:4px 0}
+
+#langBtn{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(10,10,20,0.88);backdrop-filter:blur(16px);border:1px solid rgba(255,80,60,0.15);border-radius:8px;padding:8px 16px;color:#ccc;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all 0.3s;}
+#langBtn:hover{border-color:rgba(255,80,60,0.5);color:#fff;}
+#credit{position:absolute;bottom:60px;left:20px;z-index:10;font-size:11px;color:#555;font-family:'JetBrains Mono',monospace;}
 </style>
 </head>
 <body>
 <div id="cv"></div>
+<button id="langBtn" onclick="toggleLang()">EN / 中</button>
+<div id="credit">by Michael Liao</div>
 <div id="info" class="panel">
-<h1>台灣地震 3D 分布與空缺區分析</h1>
-<div class="sub">GDMS Catalog 1973-2026 · ML ≥ 3.0</div>
-<div class="st"><span class="l">地震總數</span><span class="v">97,800</span></div>
-<div class="st"><span class="l">時間範圍</span><span class="v">1973 — 2026</span></div>
-<div class="st"><span class="l">最大深度</span><span class="v">312 km</span></div>
+<h1 id="title" data-zh="台灣地震 3D 分布與空缺區分析" data-en="Taiwan 3D Earthquake Distribution & Seismic Gap Analysis">台灣地震 3D 分布與空缺區分析</h1>
+<div class="sub" id="subtitle" data-zh="GDMS Catalog 1973-2026 · ML ≥ 3.0" data-en="GDMS Catalog 1973-2026 · ML ≥ 3.0">GDMS Catalog 1973-2026 · ML ≥ 3.0</div>
+<div class="st"><span class="l" data-zh="地震總數" data-en="Total Events">地震總數</span><span class="v">97,800</span></div>
+<div class="st"><span class="l" data-zh="時間範圍" data-en="Time Range">時間範圍</span><span class="v">1973 — 2026</span></div>
+<div class="st"><span class="l" data-zh="最大深度" data-en="Max Depth">最大深度</span><span class="v">312 km</span></div>
 
-<div style="font-size:11px;color:#666;padding-top:10px;line-height:1.6;">🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放<br>⌨ WASD 水平移動</div>
+<div style="font-size:11px;color:#666;padding-top:10px;line-height:1.6;"><span id="controls" data-zh="🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放&lt;br&gt;⌨ WASD 水平移動" data-en="🖱 Left-drag Rotate · Right-drag Pan · Scroll Zoom&lt;br&gt;⌨ WASD Move">🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放<br>⌨ WASD 水平移動</span></div>
 </div>
 <div id="leg" class="panel">
-<h3>深度 (km)</h3>
+<h3 id="depthTitle" data-zh="深度 (km)" data-en="Depth (km)">深度 (km)</h3>
 <div style="display:flex;align-items:stretch;gap:8px;">
 <div id="dbar"></div>
 <div style="display:flex;flex-direction:column;justify-content:space-between;">
@@ -46,19 +52,19 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:'Noto Sans TC',sans-serif;over
 </div></div></div>
 
 <div id="ctrl" class="panel">
-<span>最大深度：</span>
+<span data-zh="最大深度：" data-en="Max Depth:">最大深度：</span>
 <input type="range" class="sl" id="ds" min="0" max="300" value="300" step="5">
 <span id="dv" style="color:#ff6b4a;font-family:'JetBrains Mono',monospace;min-width:80px;">≤ 300 km</span>
-<span style="margin-left:8px;">｜ 顯示：</span>
+<span style="margin-left:8px;" data-zh="｜ 顯示：" data-en="｜ Show:">｜ 顯示：</span>
 <span id="vc" style="color:#ff6b4a;font-family:'JetBrains Mono',monospace;"></span>
 </div>
 <div class="panel" style="bottom:80px;right:20px;padding:14px 18px;">
-<div style="font-size:13px;font-weight:600;color:#aaa;margin-bottom:8px;">圖例</div>
+<div style="font-size:13px;font-weight:600;color:#aaa;margin-bottom:8px;" data-zh="圖例" data-en="Legend">圖例</div>
 <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#ccc;">
 <div style="width:16px;height:16px;border:2px solid #ff2244;transform:rotate(45deg);"></div>
-<span>地震空缺區 (52年內異常安靜)</span>
+<span data-zh="地震空缺區" data-en="Seismic Gap">地震空缺區</span>
 </div>
-<div style="font-size:10px;color:#666;margin-top:6px;line-height:1.5;">大小 = 嚴重程度<br>周圍活躍但該區域安靜</div>
+<div style="font-size:10px;color:#666;margin-top:6px;line-height:1.5;"><span id="gapDesc" data-zh="GPS應變持續累積&lt;br&gt;但地震矩釋放不足的區域" data-en="Areas where GPS strain accumulates&lt;br&gt;but seismic moment release is insufficient">GPS應變持續累積<br>但地震矩釋放不足的區域</span></div>
 
 </div>
 <div id="tip"></div>
@@ -183,7 +189,7 @@ var pts=new THREE.Points(pG,pM);sc.add(pts);
 var dsl=document.getElementById('ds'),dvl=document.getElementById('dv'),vcl=document.getElementById('vc');
 function filt(mx){var cnt=0;for(var i=0;i<N;i++){if(dA2[i]<=mx){dP[cnt*3]=oP[i*3];dP[cnt*3+1]=oP[i*3+1];dP[cnt*3+2]=oP[i*3+2];dC[cnt*3]=oC[i*3];dC[cnt*3+1]=oC[i*3+1];dC[cnt*3+2]=oC[i*3+2];cnt++;}}pG.setDrawRange(0,cnt);pG.attributes.position.needsUpdate=true;pG.attributes.color.needsUpdate=true;dvl.textContent='\u2264 '+mx+' km';vcl.textContent=cnt.toLocaleString()+' \u7b46';}
 dsl.addEventListener('input',function(){filt(parseFloat(dsl.value));});
-vcl.textContent=N.toLocaleString()+' \u7b46';
+vcl.textContent=N.toLocaleString()+(currentLang==='zh'?' \u7b46':' events');
 var rc=new THREE.Raycaster();rc.params.Points.threshold=0.3;
 var mo=new THREE.Vector2(),tp=document.getElementById('tip');
 rd.domElement.addEventListener('mousemove',function(ev){mo.x=(ev.clientX/innerWidth)*2-1;mo.y=-(ev.clientY/innerHeight)*2+1;rc.setFromCamera(mo,cam);var h=rc.intersectObject(pts);if(h.length>0){var idx=h[0].index;if(idx<N){var e=EQ[idx];tp.style.display='block';tp.style.left=(ev.clientX+15)+'px';tp.style.top=(ev.clientY-10)+'px';tp.innerHTML='\u7def\u5ea6: '+e[0].toFixed(4)+'\u00b0N<br>\u7d93\u5ea6: '+e[1].toFixed(4)+'\u00b0E<br>\u6df1\u5ea6: '+e[2].toFixed(1)+' km';}}else tp.style.display='none';});
@@ -201,6 +207,29 @@ function wasdMove(){
   if(keys['a'])oc.t.addScaledVector(right,-spd);
   if(keys['d'])oc.t.addScaledVector(right,spd);
   if(keys['w']||keys['s']||keys['a']||keys['d'])ocU();
+}
+
+var currentLang='zh';
+function toggleLang(){
+  currentLang=currentLang==='zh'?'en':'zh';
+  document.getElementById('langBtn').textContent=currentLang==='zh'?'EN / 中':'中 / EN';
+  document.querySelectorAll('[data-'+currentLang+']').forEach(function(el){
+    var val=el.getAttribute('data-'+currentLang);
+    if(val)el.innerHTML=val;
+  });
+  // Update unit text
+  var dv=document.getElementById('dv');
+  if(dv){
+    var v=document.getElementById('ds').value;
+    dv.textContent=(currentLang==='zh'?'\u2264 '+v+' km':'\u2264 '+v+' km');
+  }
+  var vc=document.getElementById('vc');
+  if(vc){
+    var txt=vc.textContent;
+    if(currentLang==='en') txt=txt.replace(' \u7b46',' events');
+    else txt=txt.replace(' events',' \u7b46');
+    vc.textContent=txt;
+  }
 }
 var gapT=0;
 (function an(){requestAnimationFrame(an);gapT+=0.03;wasdMove();if(typeof gapGroup!=="undefined"){gapGroup.children.forEach(function(c){if(c.isMesh){c.scale.setScalar(1+0.15*Math.sin(gapT*2));}});}rd.render(sc,cam);})();

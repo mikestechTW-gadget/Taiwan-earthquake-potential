@@ -57,22 +57,22 @@ body{background:#0a0a0f;touch-action:none;-webkit-touch-callout:none;-webkit-use
 }
 
 /* Collapsible panels */
-.panel-toggle{display:none;position:absolute;top:6px;right:8px;background:none;border:none;color:#666;font-size:14px;cursor:pointer;z-index:1;padding:2px 6px;}
-.panel-toggle:hover{color:#aaa;}
-.panel.collapsed .panel-body{display:none;}
+.panel.collapsible{cursor:pointer;}
+.panel.collapsible>*:not(:first-child):not(.panel-title){transition:all 0.2s;}
+.panel.collapsed>*:not(.panel-title){display:none!important;}
 .panel.collapsed{padding:8px 14px!important;}
-.panel.collapsed h1,.panel.collapsed h3{margin-bottom:0!important;font-size:13px!important;}
-@media(max-width:768px){
-  .panel-toggle{display:block;}
-}
+.panel.collapsed .panel-title{margin-bottom:0!important;}
+.panel-title{pointer-events:none;}
+.panel.collapsible::after{content:'▾';position:absolute;top:8px;right:12px;color:#555;font-size:12px;}
+.panel.collapsed::after{content:'▸';}
 </style>
 </head>
 <body>
 <div id="cv"></div>
 <button id="langBtn" onclick="toggleLang()">EN / 中</button>
 <div id="credit">by Michael Liao</div>
-<div id="info" class="panel"><button class="panel-toggle" onclick="this.parentElement.classList.toggle('collapsed')">−</button>
-<h1 id="title" data-zh="台灣地震 3D 分布與空缺區分析" data-en="Taiwan 3D Earthquake Distribution & Seismic Gap Analysis">台灣地震 3D 分布與空缺區分析</h1>
+<div id="info" class="panel collapsible" onclick="this.classList.toggle('collapsed')">
+<h1 id="title" data-zh="台灣地震 3D 分布與空缺區分析" data-en="Taiwan 3D Earthquake Distribution & Seismic Gap Analysis" class="panel-title">台灣地震 3D 分布與空缺區分析</h1>
 <div class="panel-body"><div class="sub" id="subtitle" data-zh="GDMS Catalog 1973-2026 · ML ≥ 3.0" data-en="GDMS Catalog 1973-2026 · ML ≥ 3.0">GDMS Catalog 1973-2026 · ML ≥ 3.0</div>
 <div class="st"><span class="l" data-zh="地震總數" data-en="Total Events">地震總數</span><span class="v">97,800</span></div>
 <div class="st"><span class="l" data-zh="時間範圍" data-en="Time Range">時間範圍</span><span class="v">1973 — 2026</span></div>
@@ -80,8 +80,8 @@ body{background:#0a0a0f;touch-action:none;-webkit-touch-callout:none;-webkit-use
 
 <div style="font-size:11px;color:#666;padding-top:10px;line-height:1.6;"><span id="controls" data-zh="🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放&lt;br&gt;⌨ WASD 水平移動" data-en="🖱 Left-drag Rotate · Right-drag Pan · Scroll Zoom&lt;br&gt;⌨ WASD Move">🖱 左鍵旋轉 · 右鍵平移 · 滾輪縮放<br>⌨ WASD 水平移動</span></div>
 </div></div>
-<div id="leg" class="panel"><button class="panel-toggle" onclick="this.parentElement.classList.toggle('collapsed')">−</button>
-<h3 id="depthTitle" data-zh="深度 (km)" data-en="Depth (km)">深度 (km)</h3>
+<div id="leg" class="panel collapsible" onclick="this.classList.toggle('collapsed')">
+<h3 id="depthTitle" data-zh="深度 (km)" data-en="Depth (km)" class="panel-title">深度 (km)</h3>
 <div style="display:flex;align-items:stretch;gap:8px;">
 <div id="dbar"></div>
 <div style="display:flex;flex-direction:column;justify-content:space-between;">
@@ -95,8 +95,8 @@ body{background:#0a0a0f;touch-action:none;-webkit-touch-callout:none;-webkit-use
 <span style="margin-left:8px;" data-zh="｜ 顯示：" data-en="｜ Show:">｜ 顯示：</span>
 <span id="vc" style="color:#ff6b4a;font-family:'JetBrains Mono',monospace;"></span>
 </div>
-<div class="panel" style="bottom:80px;right:20px;padding:14px 18px;"><button class="panel-toggle" onclick="this.parentElement.classList.toggle('collapsed')">−</button>
-<div style="font-size:13px;font-weight:600;color:#aaa;margin-bottom:8px;" data-zh="圖例" data-en="Legend">圖例</div>
+<div class="panel collapsible" style="bottom:80px;right:20px;padding:14px 18px;" onclick="this.classList.toggle('collapsed')">
+<div style="font-size:13px;font-weight:600;color:#aaa;margin-bottom:8px;" data-zh="圖例" data-en="Legend" class="panel-title">圖例</div>
 <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#ccc;">
 <div style="width:16px;height:16px;border:2px solid #ff2244;transform:rotate(45deg);"></div>
 <span data-zh="地震空缺區" data-en="Seismic Gap">地震空缺區</span>
@@ -225,6 +225,7 @@ transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
 var pts=new THREE.Points(pG,pM);sc.add(pts);
 var dsl=document.getElementById('ds'),dvl=document.getElementById('dv'),vcl=document.getElementById('vc');
 function filt(mx){var cnt=0;for(var i=0;i<N;i++){if(dA2[i]<=mx){dP[cnt*3]=oP[i*3];dP[cnt*3+1]=oP[i*3+1];dP[cnt*3+2]=oP[i*3+2];dC[cnt*3]=oC[i*3];dC[cnt*3+1]=oC[i*3+1];dC[cnt*3+2]=oC[i*3+2];cnt++;}}pG.setDrawRange(0,cnt);pG.attributes.position.needsUpdate=true;pG.attributes.color.needsUpdate=true;dvl.textContent='\u2264 '+mx+' km';vcl.textContent=cnt.toLocaleString()+' \u7b46';}
+dsl.addEventListener('click',function(e){e.stopPropagation();});
 dsl.addEventListener('input',function(){filt(parseFloat(dsl.value));});
 vcl.textContent=N.toLocaleString()+(currentLang==='zh'?' \u7b46':' events');
 var rc=new THREE.Raycaster();rc.params.Points.threshold=0.3;
